@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
 using Scrambler.ValueScramblers.Interfaces;
-using Scrambler.ValueScramblers.Implementation;
+using System.Collections.Generic;
 
 namespace Scrambler
 {
@@ -9,11 +9,16 @@ namespace Scrambler
     {
         private IStringScrambler _stringScrambler;
         private IIntScrambler _intScrambler;
+        private IDateScrambler _dateScrambler;
+        private Dictionary<Type, IScrambler> _valueScramblers;
 
-        public DataScrambler()
+        public DataScrambler(IStringScrambler stringScrambler, IIntScrambler intScrambler,
+            IDateScrambler dateScrambler)
         {
-            _stringScrambler = new StringScrambler();
-            _intScrambler = new IntScrambler();
+            _valueScramblers = new Dictionary<Type, IScrambler>();
+            _valueScramblers[typeof(string)] = stringScrambler;
+            _valueScramblers[typeof(int)] = intScrambler;
+            _valueScramblers[typeof(DateTime)] = dateScrambler;
         }
 
         public T Scramble<T>(T input)
@@ -30,14 +35,8 @@ namespace Scrambler
 
         private void ScrambleProp(object input, PropertyInfo propInfo, string customAppend)
         {
-            if (propInfo.PropertyType == typeof(string))
-            {
-                _stringScrambler.ScrambleValue(input, propInfo, customAppend);
-            }
-            else if (propInfo.PropertyType == typeof(int))
-            {
-                _intScrambler.ScrambleValue(input, propInfo, string.Empty);
-            }
+            var scrambler = _valueScramblers[propInfo.PropertyType];
+            scrambler.ScrambleValue(input, propInfo, customAppend);
         }
 
         public T Scramble<T>(T objectToScramble, Action<ScrambleMap> scrambleMapConfigurator)
@@ -50,7 +49,8 @@ namespace Scrambler
             for (int i = 0; i < props.Length; i++)
             {
                 var replaceCondition = scrambleMap.FindReplaceCondition(props[i].Name);
-                if(replaceCondition?.ConditonValue == props[i].GetValue(objectToScramble))
+
+                if(replaceCondition?.ConditonValue.Equals(props[i].GetValue(objectToScramble)) ?? false)
                 {
                     props[i].SetValue(objectToScramble, replaceCondition.ReplaceValue);
                 }
