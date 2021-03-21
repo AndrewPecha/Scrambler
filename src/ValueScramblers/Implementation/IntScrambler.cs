@@ -6,7 +6,7 @@ namespace Scrambler.ValueScramblers.Implementation
 {
     public class IntScrambler : IIntScrambler
     {
-        public void ScrambleValue(object input, PropertyInfo propInfo, string customAppend)
+        public void ScrambleValue(object input, PropertyInfo propInfo)
         {
             propInfo.SetValue(input, Convert.ToInt32(Convert.ToInt32(propInfo.GetValue(input)) * 1.1));
         }

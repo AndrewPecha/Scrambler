@@ -6,7 +6,7 @@ namespace Scrambler.ValueScramblers.Implementation
 {
     public class DateScrambler : IDateScrambler
     {
-        public void ScrambleValue(object input, PropertyInfo propInfo, string customAppend)
+        public void ScrambleValue(object input, PropertyInfo propInfo)
         {
              var date = Convert.ToDateTime(propInfo.GetValue(input));
              date = date.AddYears(1);

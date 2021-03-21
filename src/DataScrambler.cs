@@ -7,9 +7,6 @@ namespace Scrambler
 {
     public class DataScrambler
     {
-        private IStringScrambler _stringScrambler;
-        private IIntScrambler _intScrambler;
-        private IDateScrambler _dateScrambler;
         private Dictionary<Type, IScrambler> _valueScramblers;
 
         public DataScrambler(IStringScrambler stringScrambler, IIntScrambler intScrambler,
@@ -27,16 +24,16 @@ namespace Scrambler
 
             for (int i = 0; i < props.Length; i++)
             {
-                ScrambleProp(input, props[i], i.ToString());
+                ScrambleProp(input, props[i]);
             }
 
             return input;
         }
 
-        private void ScrambleProp(object input, PropertyInfo propInfo, string customAppend)
+        private void ScrambleProp(object input, PropertyInfo propInfo)
         {
             var scrambler = _valueScramblers[propInfo.PropertyType];
-            scrambler.ScrambleValue(input, propInfo, customAppend);
+            scrambler.ScrambleValue(input, propInfo);
         }
 
         public T Scramble<T>(T objectToScramble, Action<ScrambleMap> scrambleMapConfigurator)
@@ -57,11 +54,11 @@ namespace Scrambler
                 else if (scrambleMap.HasCustomScrambler(props[i].PropertyType))
                 {
                     var customScrambler = scrambleMap.GetCustomScrambler(props[i].PropertyType);
-                    customScrambler.ScrambleValue(objectToScramble, props[i], string.Empty);
+                    customScrambler.ScrambleValue(objectToScramble, props[i]);
                 }
                 else if (scrambleMap.ReplaceAll)
                 {
-                    ScrambleProp(objectToScramble, props[i], i.ToString());
+                    ScrambleProp(objectToScramble, props[i]);
                 }
             }
 

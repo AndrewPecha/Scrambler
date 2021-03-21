@@ -5,9 +5,9 @@ namespace Scrambler.ValueScramblers.Implementation
 {
     public class StringScrambler : IStringScrambler
     {
-        public void ScrambleValue(object input, PropertyInfo propInfo, string customAppend)
+        public void ScrambleValue(object input, PropertyInfo propInfo)
         {
-            propInfo.SetValue(input, propInfo.Name + customAppend);
+            propInfo.SetValue(input, propInfo.Name);
         }
     }
 }
