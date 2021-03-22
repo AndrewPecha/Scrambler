@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Scrambler;
 using Scrambler.ValueScramblers.Implementation;
 
@@ -8,23 +9,42 @@ namespace ConsoleTester
     {
         static void Main(string[] args)
         {
-            var foo = new TestClass 
-            {
-                TestString = "foo",
-                TestInt = 10,
-                TestDate = DateTime.Now
-            };
+            var foo = new List<TestClass>{
+                new TestClass 
+                {
+                    TestString = "foo",
+                    TestInt = 10,
+                    TestDate = DateTime.Now
+                },
+                new TestClass 
+                {
+                    TestString = "foo",
+                    TestInt = 20,
+                    TestDate = DateTime.Now
+                },
+                new TestClass 
+                {
+                    TestString = "bar",
+                    TestInt = 30,
+                    TestDate = DateTime.Now
+                }
+            }
+
+            ;
 
             var scrambler = new DataScrambler(new StringScrambler(), new IntScrambler(), new DateScrambler());
-            
-            scrambler.Scramble(foo, x => 
+                        
+            scrambler.ScrambleEnumerable(foo, x => 
             {
                 x.SetReplaceAll();
-                x.ConditionalReplace<TestClass>(x => x.TestString, "foo", "bar");
+                //x.ConditionalReplace<TestClass>(x => x.TestString, "foo", "bar");
                 x.AddCustomScrambler(typeof(int), new CustomIntScrambler());
-            });            
+            });
 
-            Console.WriteLine($"{foo.TestString}\n{foo.TestInt}\n{foo.TestDate}");
+            foreach (var bar in foo)
+            {
+                Console.WriteLine($"{bar.TestString}\n{bar.TestInt}\n{bar.TestDate}");
+            }
         }
 
         public class TestClass 

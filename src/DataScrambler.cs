@@ -36,6 +36,21 @@ namespace Scrambler
             scrambler.ScrambleValue(input, propInfo);
         }
 
+        public IEnumerable<T> ScrambleEnumerable<T>(IEnumerable<T> collectionToScramble, Action<ScrambleMap> scrambleMapConfigurator)
+        {
+            var props = collectionToScramble.GetType().GetGenericArguments()[0].GetProperties();
+            var scrambleMap = new ScrambleMap();
+
+            scrambleMapConfigurator?.Invoke(scrambleMap);
+
+            foreach (var objectToScramble in collectionToScramble)
+            {
+                ScrambleObjectProperties(objectToScramble, props, scrambleMap);
+            }
+
+            return collectionToScramble;
+        }
+
         public T Scramble<T>(T objectToScramble, Action<ScrambleMap> scrambleMapConfigurator)
         {
             var props = objectToScramble.GetType().GetProperties();
@@ -43,6 +58,13 @@ namespace Scrambler
 
             scrambleMapConfigurator?.Invoke(scrambleMap);
 
+            ScrambleObjectProperties(objectToScramble, props, scrambleMap);
+
+            return objectToScramble;
+        }
+
+        private void ScrambleObjectProperties<T>(T objectToScramble, PropertyInfo[] props, ScrambleMap scrambleMap)
+        {
             for (int i = 0; i < props.Length; i++)
             {
                 var replaceCondition = scrambleMap.FindReplaceCondition(props[i].Name);
@@ -61,8 +83,6 @@ namespace Scrambler
                     ScrambleProp(objectToScramble, props[i]);
                 }
             }
-
-            return objectToScramble;
         }
     }
 }
