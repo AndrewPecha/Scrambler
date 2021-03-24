@@ -28,18 +28,24 @@ namespace ConsoleTester
                     TestInt = 30,
                     TestDate = DateTime.Now
                 }
-            }
+            };
 
-            ;
+            var tracker = new ScrambleMapTracker();
+            tracker.RegisterMap("testMap", new ScrambleMap()
+                .SetReplaceAll()
+                .ConditionalReplace<TestClass>(x => x.TestString, "foo", "bar"));
 
-            var scrambler = new DataScrambler(new StringScrambler(), new IntScrambler(), new DateScrambler());
+            var scrambler = new DataScrambler(new StringScrambler(), new IntScrambler(),
+                new DateScrambler(), tracker);
                         
-            scrambler.ScrambleEnumerable(foo, x => 
-            {
-                x.SetReplaceAll();
-                //x.ConditionalReplace<TestClass>(x => x.TestString, "foo", "bar");
-                x.AddCustomScrambler(typeof(int), new CustomIntScrambler());
-            });
+            // scrambler.ScrambleEnumerable(foo, x => 
+            // {
+            //     x.SetReplaceAll();
+            //     //x.ConditionalReplace<TestClass>(x => x.TestString, "foo", "bar");
+            //     x.AddCustomScrambler(typeof(int), new CustomIntScrambler());
+            // });
+
+            scrambler.ScrambleEnumerable(foo, "testMap");
 
             foreach (var bar in foo)
             {

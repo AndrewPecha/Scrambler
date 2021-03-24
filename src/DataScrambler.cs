@@ -8,14 +8,16 @@ namespace Scrambler
     public class DataScrambler
     {
         private Dictionary<Type, IScrambler> _valueScramblers;
+        private ScrambleMapTracker _mapTracker;
 
         public DataScrambler(IStringScrambler stringScrambler, IIntScrambler intScrambler,
-            IDateScrambler dateScrambler)
+            IDateScrambler dateScrambler, ScrambleMapTracker mapTracker)
         {
             _valueScramblers = new Dictionary<Type, IScrambler>();
             _valueScramblers[typeof(string)] = stringScrambler;
             _valueScramblers[typeof(int)] = intScrambler;
             _valueScramblers[typeof(DateTime)] = dateScrambler;
+            _mapTracker = mapTracker;
         }
 
         public T Scramble<T>(T input)
@@ -38,14 +40,13 @@ namespace Scrambler
 
         public IEnumerable<T> ScrambleEnumerable<T>(IEnumerable<T> collectionToScramble, Action<ScrambleMap> scrambleMapConfigurator)
         {
-            var props = collectionToScramble.GetType().GetGenericArguments()[0].GetProperties();
             var scrambleMap = new ScrambleMap();
 
             scrambleMapConfigurator?.Invoke(scrambleMap);
 
             foreach (var objectToScramble in collectionToScramble)
             {
-                ScrambleObjectProperties(objectToScramble, props, scrambleMap);
+                Scramble(objectToScramble, scrambleMap);
             }
 
             return collectionToScramble;
@@ -57,6 +58,47 @@ namespace Scrambler
             var scrambleMap = new ScrambleMap();
 
             scrambleMapConfigurator?.Invoke(scrambleMap);
+
+            ScrambleObjectProperties(objectToScramble, props, scrambleMap);
+
+            return objectToScramble;
+        }
+
+        public IEnumerable<T> ScrambleEnumerable<T>(IEnumerable<T> collectionToScramble, ScrambleMap scrambleMap)
+        {
+            foreach (var objectToScramble in collectionToScramble)
+            {
+                Scramble(objectToScramble, scrambleMap);
+            }
+
+            return collectionToScramble;
+        }
+
+        public T Scramble<T>(T objectToScramble, ScrambleMap scrambleMap)
+        {
+            var props = objectToScramble.GetType().GetProperties();
+
+            ScrambleObjectProperties(objectToScramble, props, scrambleMap);
+
+            return objectToScramble;
+        }
+
+        public IEnumerable<T> ScrambleEnumerable<T>(IEnumerable<T> collectionToScramble, string mapKey)
+        {
+            var scrambleMap = _mapTracker.GetMap(mapKey);
+
+            foreach (var objectToScramble in collectionToScramble)
+            {
+                Scramble(objectToScramble, scrambleMap);
+            }
+
+            return collectionToScramble;
+        }
+
+        public T Scramble<T>(T objectToScramble, string mapKey)
+        {
+            var props = objectToScramble.GetType().GetProperties();
+            var scrambleMap = _mapTracker.GetMap(mapKey);
 
             ScrambleObjectProperties(objectToScramble, props, scrambleMap);
 
