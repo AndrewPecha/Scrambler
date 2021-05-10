@@ -10,13 +10,9 @@ namespace Scrambler
         private Dictionary<Type, IScrambler> _valueScramblers;
         private ScrambleMapTracker _mapTracker;
 
-        public DataScrambler(IStringScrambler stringScrambler, IIntScrambler intScrambler,
-            IDateScrambler dateScrambler, ScrambleMapTracker mapTracker)
+        public DataScrambler(ScrambleMapTracker mapTracker)
         {
             _valueScramblers = new Dictionary<Type, IScrambler>();
-            _valueScramblers[typeof(string)] = stringScrambler;
-            _valueScramblers[typeof(int)] = intScrambler;
-            _valueScramblers[typeof(DateTime)] = dateScrambler;
             _mapTracker = mapTracker;
         }
 
@@ -34,8 +30,10 @@ namespace Scrambler
 
         private void ScrambleProp(object input, PropertyInfo propInfo)
         {
-            var scrambler = _valueScramblers[propInfo.PropertyType];
-            scrambler.ScrambleValue(input, propInfo);
+            _valueScramblers.TryGetValue(propInfo.PropertyType, out var scrambler);
+
+            if(scrambler != null)
+                scrambler.ScrambleValue(input, propInfo);
         }
 
         public IEnumerable<T> ScrambleEnumerable<T>(IEnumerable<T> collectionToScramble, Action<ScrambleMap> scrambleMapConfigurator)
@@ -104,7 +102,7 @@ namespace Scrambler
 
             return objectToScramble;
         }
-
+        
         private void ScrambleObjectProperties<T>(T objectToScramble, PropertyInfo[] props, ScrambleMap scrambleMap)
         {
             for (int i = 0; i < props.Length; i++)
@@ -120,9 +118,44 @@ namespace Scrambler
                     var customScrambler = scrambleMap.GetCustomScrambler(props[i].PropertyType);
                     customScrambler.ScrambleValue(objectToScramble, props[i]);
                 }
-                else if (scrambleMap.ReplaceAll)
+            }
+        }
+
+        public IEnumerable<T> UnscrambleEnumerable<T>(IEnumerable<T> collectionToUnscramble, string mapKey)
+        {
+            var scrambleMap = _mapTracker.GetMap(mapKey);
+
+            foreach (var objectToUnscramble in collectionToUnscramble)
+            {
+                Unscramble(objectToUnscramble, scrambleMap);
+            }
+
+            return collectionToUnscramble;
+        }
+
+        public T Unscramble<T>(T objectToUnscramble, ScrambleMap scrambleMap)
+        {
+            var props = objectToUnscramble.GetType().GetProperties();
+
+            UnscrambleObjectProperties(objectToUnscramble, props, scrambleMap);
+
+            return objectToUnscramble;
+        }
+
+        private void UnscrambleObjectProperties<T>(T objectToUnscramble, PropertyInfo[] props, ScrambleMap scrambleMap)
+        {
+            foreach (var prop in props)
+            {
+                var replaceCondition = scrambleMap.FindReplaceCondition(prop.Name);
+
+                if(replaceCondition?.ReplaceValue.Equals(prop.GetValue(objectToUnscramble)) ?? false)
                 {
-                    ScrambleProp(objectToScramble, props[i]);
+                    prop.SetValue(objectToUnscramble, replaceCondition.ConditonValue);
+                }
+                else if(scrambleMap.HasCustomScrambler(prop.PropertyType))
+                {
+                    var customeScrambler = scrambleMap.GetCustomScrambler(prop.PropertyType);
+                    customeScrambler.UnscrambleValue(objectToUnscramble, prop);
                 }
             }
         }

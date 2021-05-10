@@ -9,7 +9,6 @@ namespace Scrambler
     {
         internal Dictionary<string, ReplaceCondition> ReplaceConditions { get; private set; }
         internal Dictionary<Type, IScrambler> CustomScramblers { get; private set;}
-        internal bool ReplaceAll { get; private set; }
 
         public ScrambleMap()
         {
@@ -32,12 +31,6 @@ namespace Scrambler
         public ScrambleMap AddCustomScrambler(Type type, IScrambler customScrambler)
         {
             CustomScramblers.Add(type, customScrambler);
-            return this;
-        }
-
-        public ScrambleMap SetReplaceAll(bool replaceAll = true)
-        {
-            ReplaceAll = replaceAll;
             return this;
         }
 

@@ -13,5 +13,10 @@ namespace Scrambler.ValueScramblers.Implementation
 
              propInfo.SetValue(input, date);
         }
+
+        public void UnscrambleValue(object input, PropertyInfo propInfo)
+        {
+            
+        }
     }
 }

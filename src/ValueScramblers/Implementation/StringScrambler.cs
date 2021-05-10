@@ -19,6 +19,11 @@ namespace Scrambler.ValueScramblers.Implementation
             propInfo.SetValue(input, propInfo.Name + occurences);
         }
 
+        public void UnscrambleValue(object input, PropertyInfo propInfo)
+        {
+            
+        }
+
         private int GetGroupNumber(string key)
         {
             if(_existingKeyTracker.Contains(key))

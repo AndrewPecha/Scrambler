@@ -32,11 +32,9 @@ namespace ConsoleTester
 
             var tracker = new ScrambleMapTracker();
             tracker.RegisterMap("testMap", new ScrambleMap()
-                .SetReplaceAll()
                 .ConditionalReplace<TestClass>(x => x.TestString, "foo", "bar"));
 
-            var scrambler = new DataScrambler(new StringScrambler(), new IntScrambler(),
-                new DateScrambler(), tracker);
+            var scrambler = new DataScrambler(tracker);
                         
             // scrambler.ScrambleEnumerable(foo, x => 
             // {
@@ -46,6 +44,13 @@ namespace ConsoleTester
             // });
 
             scrambler.ScrambleEnumerable(foo, "testMap");
+
+            foreach (var bar in foo)
+            {
+                Console.WriteLine($"{bar.TestString}\n{bar.TestInt}\n{bar.TestDate}");
+            }
+
+            scrambler.UnscrambleEnumerable(foo, "testMap");
 
             foreach (var bar in foo)
             {

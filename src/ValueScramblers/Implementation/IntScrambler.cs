@@ -10,5 +10,10 @@ namespace Scrambler.ValueScramblers.Implementation
         {
             propInfo.SetValue(input, Convert.ToInt32(Convert.ToInt32(propInfo.GetValue(input)) * 1.1));
         }
+
+        public void UnscrambleValue(object input, PropertyInfo propInfo)
+        {
+            
+        }
     }
 }
